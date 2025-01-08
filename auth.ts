@@ -115,8 +115,24 @@ export const config = {
     },
 
     authorized({ request, auth }: any) {
-      // Check for session cart cookie
+      //Array of regex patterns of paths we want to protect
+      const protectedPaths = [
+        /\/shipping-address/,
+        /\/payment-method/,
+        /\/profile/,
+        /\/user\/(.*)/,
+        /\/order\/(.*)/,
+        /\/admin/,
+      ];
+
+      //Get pathname from the req URL object
+      const { pathname } = request.nextUrl;
+
+      //Check if user is not authenticated and accessing a protected path
+      if (!auth && protectedPaths.some((p) => p.test(pathname))) return false;
+
       if (!request.cookies.get("sessionCartId")) {
+        // Check for session cart cookie
         const sessionCartId = crypto.randomUUID();
 
         // Clone the req headers
