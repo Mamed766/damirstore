@@ -314,7 +314,7 @@ const ProductForm = ({
                 <Image
                   src={banner}
                   alt="banner image"
-                  className="w-full object-cover object-center rounded-sm"
+                  className="w-full object-cover object-center mt-20 rounded-sm"
                   height={680}
                   width={1920}
                 />
