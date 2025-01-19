@@ -6,7 +6,7 @@ import { insertProductSchema, updateProductSchema } from "@/lib/validators";
 import { Product } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { ControllerRenderProps, useForm } from "react-hook-form";
+import { ControllerRenderProps, SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
 import {
   Form,
@@ -20,6 +20,10 @@ import slugify from "slugify";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
+import { createProduct, updateProduct } from "@/lib/actions/product.actions";
+import { UploadButton } from "@/lib/uploadthing";
+import { Card, CardContent } from "../ui/card";
+import Image from "next/image";
 
 const ProductForm = ({
   type,
@@ -41,9 +45,59 @@ const ProductForm = ({
       product && type === "Update" ? product : productDefaultValues,
   });
 
+  const onSubmit: SubmitHandler<z.infer<typeof insertProductSchema>> = async (
+    values
+  ) => {
+    //On Create
+    if (type === "Create") {
+      const res = await createProduct(values);
+
+      if (!res.success) {
+        toast({
+          variant: "destructive",
+          description: res.message,
+        });
+      } else {
+        toast({
+          description: res.message,
+        });
+        router.push("/admin/products");
+      }
+    }
+
+    //On Update
+
+    if (type === "Update") {
+      if (!productId) {
+        router.push("/admin/products");
+        return;
+      }
+
+      const res = await updateProduct({ ...values, id: productId });
+
+      if (!res.success) {
+        toast({
+          variant: "destructive",
+          description: res.message,
+        });
+      } else {
+        toast({
+          description: res.message,
+        });
+        router.push("/admin/products");
+      }
+    }
+  };
+
+  const images = form.watch("images");
+
   return (
     <Form {...form}>
-      <form className="space-y-8">
+      <form
+        method="POST"
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-8"
+      >
         <div className="flex flex-col md:flex-row gap-5">
           {/* Name */}
           <FormField
@@ -89,9 +143,7 @@ const ProductForm = ({
                       className="bg-gray-500 hover:bg-gray-600 text-white mt-2
                             "
                       onClick={() => {
-                        form.setValue("slug", slugify(form.getValues("name")), {
-                          lower: true,
-                        });
+                        form.setValue("slug", slugify(form.getValues("name")));
                       }}
                     >
                       Generate
@@ -191,7 +243,50 @@ const ProductForm = ({
           {/* Name */}
           {/* Slug */}
         </div>
-        <div className="flex flex-col md:flex-row gap-5">{/* Images */}</div>
+        <div className="flex flex-col md:flex-row gap-5">
+          {/* Images */}
+
+          <FormField
+            control={form.control}
+            name="images"
+            render={() => (
+              <FormItem className="w-full">
+                <FormLabel>Name</FormLabel>
+                <Card>
+                  <CardContent className="space-y-2 mt-2 min-h-48">
+                    <div className="flex-start space-x-2">
+                      {images.map((image: string) => (
+                        <Image
+                          key={image}
+                          src={image}
+                          alt="product image"
+                          height={100}
+                          width={100}
+                          className="w-20 h-20 object-cover  object-center rounded-sm"
+                        />
+                      ))}
+                      <FormControl>
+                        <UploadButton
+                          endpoint="imageUploader"
+                          onClientUploadComplete={(res: { url: string }[]) => {
+                            form.setValue("images", [...images, res[0].url]);
+                          }}
+                          onUploadError={(error: Error) => {
+                            toast({
+                              variant: "destructive",
+                              description: `ERROR! ${error.message}`,
+                            });
+                          }}
+                        />
+                      </FormControl>
+                    </div>
+                  </CardContent>
+                </Card>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="upload-field">{/* isFeatured */}</div>
         <div className="">
           <FormField
