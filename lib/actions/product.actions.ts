@@ -1,14 +1,8 @@
 "use server";
 
-import {
-  convertToPlainObject,
-  formatCurrency,
-  formatError,
-  formatId,
-} from "../utils";
+import { convertToPlainObject, formatError } from "../utils";
 import { LATEST_PRODUCTS_LIMIT, PAGE_SIZE } from "../constants";
 import { prisma } from "@/db/prisma";
-import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { insertProductSchema, updateProductSchema } from "../validators";
 import { z } from "zod";
@@ -47,13 +41,31 @@ export async function getAllProducts({
   page: number;
   category?: string;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const where: any = {};
+
+  if (query) {
+    where.name = {
+      contains: query,
+      mode: "insensitive",
+    };
+  }
+
+  if (category) {
+    where.category = category;
+  }
+
   const data = await prisma.product.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * limit,
     take: limit,
   });
 
-  const dataCount = await prisma.product.count();
+  const dataCount = await prisma.product.count({
+    where,
+  });
+
   return {
     data,
     totalPages: Math.ceil(dataCount / limit),
