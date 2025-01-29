@@ -138,6 +138,7 @@ export const insertReviewSchema = z.object({
   description: z.string().min(3, "Title must be at least 3 characters"),
   price: z.string().min(1, "Product is required"),
   userId: z.string().min(1, "User is required"),
+  productId: z.string().min(1, "Product is required"),
   rating: z.coerce
     .number()
     .int()
