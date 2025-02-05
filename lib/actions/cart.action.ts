@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/db/prisma";
 import { cartItemSchema, insertCartSchema } from "../validators";
 import { revalidatePath } from "next/cache";
-import { Cart, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 //calculate cart prices
 

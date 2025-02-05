@@ -22,6 +22,7 @@ const SignUpPage = async (props: {
     callbackUrl: string;
   }>;
 }) => {
+  // @ts-expect-error sadasd
   const { callbackUrl } = props.searchParams;
 
   const session = await auth();
