@@ -30,7 +30,6 @@ const calcPrice = (items: CartItem[]) => {
 export async function addItemToCart(data: CartItem) {
   try {
     //Get cart
-    //eslint-disable-next-line
     const cart = await getMyCart();
 
     //Parse and validate Item
